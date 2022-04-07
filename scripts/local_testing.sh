@@ -1,9 +1,12 @@
-# Start Local Zookeeper & Kafka
+# Assumes a working cluster for DB connection!
+# Check out deployment.sh for more information
+
+# Start Local Zookeeper & Kafka with Docker
 docker-compose up -d
 export KAFKA_PRODUCER="127.0.0.1:9092"
 export KAFKA_CONSUMER="127.0.0.1:9092"
 
-# Connect to the database
+# Connect to the DB on Local K8s Cluster
 kubectl port-forward service/postgres 5432:5432
 export DB_USERNAME="ct_admin"
 export DB_PASSWORD="wowimsosecure"
