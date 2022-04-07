@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: udaconnect-location-producer
+  name: udaconnect-location-producer
+spec:
+  ports:
+    - name: "5555"
+      port: 5555
+      targetPort: 5555
+      nodePort: 30020
+  selector:
+    service: udaconnect-location-producer
+
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: udaconnect-location-producer
+  name: udaconnect-location-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: udaconnect-location-producer
+  template:
+    metadata:
+      labels:
+        service: udaconnect-location-producer
+    spec:
+      containers:
+        - image: maxritter/udaconnect-location-producer:latest
+          name: location-producer
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "256m"
+          env:
+            - name: KAFKA_PRODUCER
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-env
+                  key: KAFKA_PRODUCER
