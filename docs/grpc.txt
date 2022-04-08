@@ -1,0 +1,49 @@
+#################################################################################
+GRPC Endpoint - See also modules/location-producer/app/udaconnect/location.proto
+#################################################################################
+
+syntax = "proto3";
+
+message LocationMessage {
+  int32 person_id = 1;
+  float latitude = 2;
+  float longitude = 3;
+}
+
+message Empty {
+}
+
+message LocationMessageList {
+  repeated LocationMessage location = 1;
+}
+
+service LocationService {
+    rpc Create(LocationMessage) returns (LocationMessage);
+    rpc Get(Empty) returns (LocationMessageList);
+}
+
+#################################################################################
+GRPC Tutorial: How to make a sample request
+#################################################################################
+
+# Start PostGIS, ZooKeeper and Kafka locally using docker
+docker-compose up -d
+
+# Install Migrate from https://github.com/golang-migrate/migrate/tree/master/cmd/migrate, then run:
+export DB_USERNAME="postgres" && export DB_PASSWORD="postgres" && export DB_HOST="localhost" && export DB_PORT="5432" && export DB_NAME="postgres"
+export DATABASE="postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_DATABASE?sslmode=disable"
+migrate -path="./db/" -database $DATABASE up
+
+# Run the following lines each in a separate terminal:
+# 1. Run Kafka Location Consumer
+export DB_USERNAME="postgres" && export DB_PASSWORD="postgres" && export DB_HOST="localhost" && export DB_PORT="5432" && export DB_NAME="postgres"
+KAFKA_CONSUMER="127.0.0.1:9092" python ./modules/location-consumer/app/udaconnect/consumer.py
+
+# 2. Run Kafka Location Producer
+KAFKA_PRODUCER="127.0.0.1:9092" python ./modules/location-producer/app/udaconnect/producer.py
+
+# 3. Run our test, should output "Done!" at the end
+python ./modules/location-producer/app/udaconnect/grpc_writer.py
+
+# You can use Kafdrop running at http://localhost:9000/ to verify message sending on Kafka topic
+# You can use pgAdmin to verify the data has been written to the PostgreSQL DB in the location table

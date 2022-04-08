@@ -1,0 +1,21 @@
+Decisions: 
+1. I've developed a separate connection microservice that passes messages through the REST API.
+2. I've established a distinct individual microservice that communicates with the REST API.
+3. I've established a separate locations microservice that communicates over gRPC and Kafka.
+
+Justifications:
+Point 1:
+To reduce the amount of complexity when users access the website, I established a connection microservice utilizing the REST API.
+I finished the connection microservice (refactored after the persons and location microservice). 
+Because it's a customer-facing application, REST would be a suitable choice for message passing.
+
+Point 2:
+I established an individuals microservice as it isn't heavily used in the main application. 
+Because it's important to acquire and upload people's data over http, designing a RESTful API would be appropriate in this scenario. 
+Also, as each request must be treated separately, I believe the RESTful API is appropriate.
+
+Point 3:
+Because mobile devices must gather location information at the same time, a message queue such as Kafka is required. 
+Using Kafka will aid in the processing of each location even as the volume grows—a concern that the refactoring must address. 
+Furthermore, putting gRPC before Kafka ensures that the data is appropriately formatted before being sent to the database. 
+Not only will this assure data security, but it will also ensure data transmission speed.
